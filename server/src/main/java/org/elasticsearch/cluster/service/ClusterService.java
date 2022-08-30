@@ -82,6 +82,10 @@ public class ClusterService extends AbstractLifecycleComponent {
         this.clusterApplierService = clusterApplierService;
     }
 
+    public ThreadPool threadPool() {
+        return clusterApplierService.threadPool();
+    }
+
     public synchronized void setNodeConnectionsService(NodeConnectionsService nodeConnectionsService) {
         clusterApplierService.setNodeConnectionsService(nodeConnectionsService);
     }
@@ -195,10 +199,10 @@ public class ClusterService extends AbstractLifecycleComponent {
     }
 
     public static boolean assertClusterOrMasterStateThread() {
-        assert Thread.currentThread().getName().contains(ClusterApplierService.CLUSTER_UPDATE_THREAD_NAME)
-            || Thread.currentThread().getName().contains(MasterService.MASTER_UPDATE_THREAD_NAME)
-            : "not called from the master/cluster state update thread";
-        return true;
+        return ThreadPool.assertCurrentThreadPool(
+            ClusterApplierService.CLUSTER_UPDATE_THREAD_NAME,
+            MasterService.MASTER_UPDATE_THREAD_NAME
+        );
     }
 
     public ClusterName getClusterName() {
